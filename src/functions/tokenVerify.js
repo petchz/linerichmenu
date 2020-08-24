@@ -7,10 +7,13 @@ function tokenVerify(value) {
       url,
       { access_token: value },
       {
-        withCredentials: false,
+        mode: "no-cors",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
+          "Access-Control-Allow-Origin": "*",
         },
+        withCredentials: true,
+        credentials: "same-origin",
       }
     )
     .then((res) => {
