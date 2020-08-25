@@ -9,10 +9,10 @@ import {
   Button,
   Avatar,
 } from "@material-ui/core";
-import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
+import CodeIcon from "@material-ui/icons/Code";
 import { makeStyles } from "@material-ui/core/styles";
 
-import tokenVerify from "../functions/tokenVerify";
+import linerichmenu from "../functions/linerichmenu";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
   },
   avatar: {
     margin: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main,
+    backgroundColor: "#00B900",
   },
   form: {
     width: "100%", // Fix IE 11 issue.
@@ -42,7 +42,7 @@ export default function Checktoken() {
       <CssBaseline />
       <div className={useStyles().paper}>
         <Avatar className={useStyles().avatar}>
-          <LockOutlinedIcon />
+          <CodeIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
           LINE Rich Menu Uploader
@@ -64,13 +64,14 @@ export default function Checktoken() {
           variant="contained"
           color="primary"
           className={useStyles().submit}
-          onClick={() => tokenVerify(accesstoken)}
+          disabled={accesstoken.length > 80 ? false : true}
+          onClick={() => linerichmenu.verify(accesstoken)}
         >
           Verify
         </Button>
       </div>
       <Box mt={8}>
-        <Typography variant="body2" color="textSecondary" align="center">
+        <Typography variant="body2" color="textSecondary" align="center" hidden>
           {"Copyright © "}
           <Link color="inherit" href="https://taewapon.site/">
             Taewapon.site
