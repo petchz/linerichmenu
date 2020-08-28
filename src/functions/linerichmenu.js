@@ -1,5 +1,5 @@
 import axios from "axios";
-const url = "http://localhost:4000";
+const url = process.env.REACT_APP_URL
 
 const linerichmenu = {
   verify: async function (data) {
@@ -24,6 +24,77 @@ const linerichmenu = {
     let value = "";
     await axios
       .post(url + "/richmenu/list", { access_token: data })
+      .then((res) => {
+        value = res;
+      })
+      .catch((err) => {
+        value = err;
+      });
+    return value;
+  },
+
+  newmenu: async function (data) {
+    let value = "";
+    await axios
+      .post(url + "/richmenu/new", {
+        access_token: data.access_token,
+        menu: data.menu,
+      })
+      .then((res) => {
+        value = res;
+      })
+      .catch((err) => {
+        value = err;
+      });
+    return value;
+  },
+
+  delmenu: async function (data) {
+    let value = "";
+    await axios
+      .post(url + "/richmenu/del", {
+        access_token: data.access_token,
+        menuid: data.menuid,
+      })
+      .then((res) => {
+        value = res;
+      })
+      .catch((err) => {
+        value = err;
+      });
+    return value;
+  },
+
+  getimage: async function (data) {
+    let value = "";
+    await axios
+      .post(url + "/richmenu/image", {
+        access_token: data.access_token,
+        menuid: data.menuid,
+      })
+      .then((res) => {
+        value = res;
+      })
+      .catch((err) => {
+        value = err;
+      });
+    return value;
+  },
+
+  addimage: async function (data) {
+    let image = data.image;
+    let access_token = data.access_token;
+    let menuid = data.menuid;
+    let imagetype = data.imagetype;
+
+    let value = "";
+    await axios
+      .post(url + "/richmenu/new/image", {
+        image: image,
+        access_token: access_token,
+        menuid: menuid,
+        imagetype: imagetype,
+      })
       .then((res) => {
         value = res;
       })
