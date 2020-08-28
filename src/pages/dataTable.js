@@ -34,7 +34,6 @@ const CustomLoader = () => (
     </div>
   </div>
 );
-
 export default class Dashboard extends Component {
   constructor(props) {
     super(props);
@@ -42,12 +41,10 @@ export default class Dashboard extends Component {
       loading: true,
       data: [],
       access_token: "",
-      modal: false,
-      addmodal: false,
+      defaultmenu: "",
       menu: "",
       image: null,
       imagetype: "",
-      imagmodal: "",
     };
     this.handleChange = this.handleChange.bind(this);
   }
@@ -62,14 +59,7 @@ export default class Dashboard extends Component {
     if (localStorage.token == null) {
       this.setState({ loading: false, modal: true, access_token: "" });
     } else {
-      linerichmenu.menulist(localStorage.token).then((res) => {
-        this.setState({
-          data: res.data.richmenus,
-          loading: false,
-          modal: false,
-          access_token: localStorage.token,
-        });
-      });
+      this.getdata();
     }
   }
 
@@ -80,13 +70,71 @@ export default class Dashboard extends Component {
   }
 
   getdata() {
-    linerichmenu.menulist(localStorage.token).then((res) => {
+    let value = "";
+    if (this.state.access_token !== "") {
+      value = this.state.access_token;
+    } else {
+      value = localStorage.token;
+    }
+    linerichmenu.menulist(value).then((res) => {
       this.setState({
         data: res.data.richmenus,
-        loading: false,
+        access_token: localStorage.token,
       });
+      this.getdefault();
     });
   }
+
+  getdefault() {
+    linerichmenu.getdefault(localStorage.token).then((res) => {
+      if (res.data.richMenuId) {
+        this.setState({
+          defaultmenu: res.data.richMenuId,
+          loading: false,
+        });
+      } else {
+        this.setState({
+          loading: false,
+        });
+      }
+    });
+  }
+
+  setdefault(menuid, menuname) {
+    if (window.confirm(`Set "${menuname}" as a default rich menu ?`)) {
+      this.setState({ loading: true });
+      linerichmenu
+        .setdefault({
+          access_token: this.state.access_token,
+          menuid: menuid,
+        })
+        .then((res) => {
+          this.getdata();
+        });
+    } else {
+      // console.log("cancel");
+    }
+  }
+
+  checkdefault = (value) => {
+    let isdefault = "";
+    if (value.toLowerCase() === this.state.defaultmenu) {
+      isdefault = "check";
+    } else {
+      isdefault = "close";
+    }
+    return isdefault;
+  };
+
+  checkcolor = (value) => {
+    let isdefault = "";
+    if (value.toLowerCase() === this.state.defaultmenu) {
+      isdefault = "green";
+    } else {
+      isdefault = "red";
+    }
+    return isdefault;
+  };
 
   submit = (e) => {
     this.setState({ loading: true, modal: false });
@@ -111,40 +159,30 @@ export default class Dashboard extends Component {
       });
   };
 
-  addimage(menuid) {
-    this.setState({ loading: true });
-    linerichmenu
-      .addimage({
-        access_token: this.state.access_token,
-        menuid: menuid,
-        image: this.state.image,
-        imagetype: this.state.image,
-      })
-      .then((res) => {
-        console.log(res);
-      });
+  del(menuid, menuname) {
+    if (window.confirm(`Are you want to delete "${menuname}" ?`)) {
+      this.setState({ loading: true });
+      linerichmenu
+        .delmenu({
+          access_token: this.state.access_token,
+          menuid: menuid,
+        })
+        .then((res) => {
+          this.getdata();
+        });
+    } else {
+      // console.log("cancel");
+    }
   }
 
-  del(menuid) {
-    this.setState({ loading: true });
-    linerichmenu
-      .delmenu({
-        access_token: this.state.access_token,
-        menuid: menuid,
-      })
-      .then((res) => {
-        this.getdata();
-      });
-  }
-
-  copy(menuid) {
+  copy(menuid, menuname) {
     var textField = document.createElement("textarea");
     textField.innerText = menuid;
     document.body.appendChild(textField);
     textField.select();
     document.execCommand("copy");
     textField.remove();
-    alert("Copied: " + menuid);
+    alert("Copied: " + menuname);
   }
 
   onChangeHandler = (event) => {
@@ -171,6 +209,20 @@ export default class Dashboard extends Component {
       });
   }
 
+  addimage(menuid) {
+    this.setState({ loading: true });
+    linerichmenu
+      .addimage({
+        access_token: this.state.access_token,
+        menuid: menuid,
+        image: this.state.image,
+        imagetype: this.state.image,
+      })
+      .then((res) => {
+        console.log(res);
+      });
+  }
+
   render() {
     return (
       <div className="viewpage">
@@ -183,10 +235,17 @@ export default class Dashboard extends Component {
           LINE Rich Menu Manager
         </Header>
         <DataTable
-          onRowClicked={(row) => this.copy(row.richMenuId)}
+          onRowClicked={(row) => this.copy(row.richMenuId, row.name)}
           noHeader={true}
           highlightOnHover={true}
           pointerOnHover={true}
+          data={this.state.data}
+          progressPending={this.state.loading}
+          progressComponent={<CustomLoader />}
+          subHeader={true}
+          subHeaderAlign={"right"}
+          pagination
+          className="prompt"
           columns={[
             {
               name: "Name",
@@ -201,13 +260,31 @@ export default class Dashboard extends Component {
               cell: (row) => row.size.width + " x " + row.size.height,
             },
             {
+              name: "Default Rich Menu",
               cell: (row) => (
                 <div>
                   <Button
-                    color="red"
+                    color={this.checkcolor(row.richMenuId)}
+                    icon
+                    size="tiny"
+                    onClick={() => this.setdefault(row.richMenuId, row.name)}
+                  >
+                    {this.checkdefault(row.richMenuId) === "check"
+                      ? "This is Default "
+                      : "This is not Default"}
+                    <Icon name={this.checkdefault(row.richMenuId)}></Icon>
+                  </Button>
+                </div>
+              ),
+            },
+            {
+              cell: (row) => (
+                <div>
+                  <Button
+                    color="orange"
                     size="small"
                     icon
-                    onClick={() => this.del(row.richMenuId)}
+                    onClick={() => this.del(row.richMenuId, row.name)}
                   >
                     <Icon name="trash alternate outline" />
                   </Button>
@@ -216,11 +293,6 @@ export default class Dashboard extends Component {
               button: true,
             },
           ]}
-          data={this.state.data}
-          progressPending={this.state.loading}
-          progressComponent={<CustomLoader />}
-          subHeader={true}
-          subHeaderAlign={"right"}
           subHeaderComponent={
             <div style={{ display: "flex", alignItems: "center" }}>
               <Modal
@@ -342,8 +414,6 @@ export default class Dashboard extends Component {
               </Modal>
             </div>
           }
-          pagination
-          className="prompt"
         />
       </div>
     );

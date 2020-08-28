@@ -1,5 +1,5 @@
 import axios from "axios";
-const url = process.env.REACT_APP_URL
+const url = process.env.REACT_APP_URL;
 
 const linerichmenu = {
   verify: async function (data) {
@@ -24,6 +24,39 @@ const linerichmenu = {
     let value = "";
     await axios
       .post(url + "/richmenu/list", { access_token: data })
+      .then((res) => {
+        value = res;
+      })
+      .catch((err) => {
+        value = err;
+      });
+    return value;
+  },
+
+  getdefault: async function (data) {
+    let value = "";
+    await axios
+      .get(url + "/richmenu/defaultmenu", {
+        headers: {
+          access_token: data,
+        },
+      })
+      .then((res) => {
+        value = res;
+      })
+      .catch((err) => {
+        value = err;
+      });
+    return value;
+  },
+
+  setdefault: async function (data) {
+    let value = "";
+    await axios
+      .post(url + "/richmenu/defaultmenu", {
+        access_token: data.access_token,
+        menuid: data.menuid,
+      })
       .then((res) => {
         value = res;
       })
