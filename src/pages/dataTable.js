@@ -153,7 +153,6 @@ export default class Dashboard extends Component {
 
   new = (e) => {
     this.setState({ loading: true, addmodal: false });
-    console.log(this.state.imagetype);
     linerichmenu
       .newmenu({
         access_token: this.state.access_token,
@@ -240,7 +239,7 @@ export default class Dashboard extends Component {
           className="prompt"
           style={{ marginTop: "0.75em" }}
         >
-          LINE Rich Menu Manager
+          LINE Rich Menu Manager<small> (v 1.0.1)</small>
         </Header>
         <DataTable
           onRowClicked={(row) => this.copy(row.richMenuId, row.name)}
