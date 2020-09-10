@@ -14,6 +14,10 @@ import {
 } from "semantic-ui-react";
 
 import linerichmenu from "../functions/linerichmenu";
+import Axios from "axios";
+
+const url = process.env.REACT_APP_URL;
+const data = new FormData();
 
 const CustomLoader = () => (
   <div id="loader" className="customload">
@@ -149,13 +153,26 @@ export default class Dashboard extends Component {
 
   new = (e) => {
     this.setState({ loading: true, addmodal: false });
+    console.log(this.state.imagetype);
     linerichmenu
       .newmenu({
         access_token: this.state.access_token,
         menu: this.state.menu,
       })
       .then((res) => {
-        this.getdata();
+        Axios.post(url + "/richmenu/new/image", data, {
+          headers: {
+            access_token: this.state.access_token,
+            menuid: res.data.richMenuId,
+            imagetype: this.state.imagetype,
+          },
+        }).then((res) => {
+          this.setState({
+            menu: "",
+            image: null,
+          });
+          this.getdata();
+        });
       });
   };
 
@@ -190,6 +207,11 @@ export default class Dashboard extends Component {
       image: event.target.files[0],
       imagetype: event.target.files[0].type,
     });
+
+    var file = event.target.files[0];
+    data.append("file", file);
+
+    // แสดงภาพบน modal add
     var output = document.getElementById("output");
     output.src = URL.createObjectURL(event.target.files[0]);
     output.onload = function () {
@@ -206,20 +228,6 @@ export default class Dashboard extends Component {
       .then((res) => {
         console.log(res);
         this.setState({ test: res });
-      });
-  }
-
-  addimage(menuid) {
-    this.setState({ loading: true });
-    linerichmenu
-      .addimage({
-        access_token: this.state.access_token,
-        menuid: menuid,
-        image: this.state.image,
-        imagetype: this.state.image,
-      })
-      .then((res) => {
-        console.log(res);
       });
   }
 
@@ -254,6 +262,20 @@ export default class Dashboard extends Component {
             {
               name: "Menu ID",
               selector: "richMenuId",
+            },
+            {
+              cell: (row) => (
+                <div>
+                  <Button
+                    size="small"
+                    icon
+                    onClick={() => this.copy(row.richMenuId, row.name)}
+                  >
+                    Copy ID
+                  </Button>
+                </div>
+              ),
+              button: true,
             },
             {
               name: "Size",
@@ -334,7 +356,7 @@ export default class Dashboard extends Component {
                       />
                       <Input
                         type="file"
-                        name="image"
+                        name="file"
                         accept=".png, .jpg"
                         onChange={this.onChangeHandler}
                       />

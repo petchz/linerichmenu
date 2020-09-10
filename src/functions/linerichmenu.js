@@ -113,29 +113,6 @@ const linerichmenu = {
       });
     return value;
   },
-
-  addimage: async function (data) {
-    let image = data.image;
-    let access_token = data.access_token;
-    let menuid = data.menuid;
-    let imagetype = data.imagetype;
-
-    let value = "";
-    await axios
-      .post(url + "/richmenu/new/image", {
-        image: image,
-        access_token: access_token,
-        menuid: menuid,
-        imagetype: imagetype,
-      })
-      .then((res) => {
-        value = res;
-      })
-      .catch((err) => {
-        value = err;
-      });
-    return value;
-  },
 };
 
 export default linerichmenu;
